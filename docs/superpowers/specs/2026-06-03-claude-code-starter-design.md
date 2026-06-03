@@ -29,7 +29,7 @@ From the brainstorming session (2026-06-03):
 |---|---|---|
 | Karpathy LLM wiki source | **Generate fresh**, authored now as **static** markdown vendored in the repo | Deterministic, no API key / tokens needed at install time, inspectable |
 | Target OS | **macOS only** | Matches Casey's setup; one bash script; smallest correct surface |
-| Skills to bundle | **Curated starter set** (superpowers + karpathy-guidelines + a few official plugins) | New users don't need the ~20 finance/PE plugins or the gsd-* fleet |
+| Skills to bundle | **Curated starter set**, installed via public marketplaces (superpowers + karpathy + a few official plugins) — **not vendored/copied** | New users don't need the ~20 finance/PE plugins or the gsd-* fleet; marketplace install avoids redistribution and auto-updates |
 | Delivery | **Public git repo + one-liner bootstrap** | Inspectable and versioned, plus a convenient `curl … \| bash` |
 | Repo | `caseyhorowitz1536/claude-code-starter` (public), built at `~/Documents/GitHub/claude-code-starter` | One-liner URL bakes in the repo path |
 | Vault install path | `~/Documents/Karpathy LLM Wiki/` as its **own** vault | Keeps it isolated from Casey's private `~/Documents/Obsidian Vault/` |
@@ -55,10 +55,8 @@ claude-code-starter/
 │   ├── preflight.sh      # assert macOS; ensure Xcode CLT; ensure Homebrew
 │   ├── claude-code.sh    # official install.sh; ensure ~/.local/bin on PATH; verify
 │   ├── obsidian.sh       # brew install --cask obsidian (skip if present)
-│   ├── skills.sh         # copy skills/* → ~/.claude/skills/ (backup existing)
-│   ├── plugins.sh        # claude plugin marketplace add + install curated set
+│   ├── plugins.sh        # claude plugin marketplace add (×3) + install curated set
 │   └── vault.sh          # copy vault/ → ~/Documents/Karpathy LLM Wiki/ (no clobber)
-├── skills/               # vendored curated skills (see §5)
 ├── vault/                # the pre-authored Karpathy LLM Wiki + .obsidian/ (see §4)
 ├── README.md             # what it does, the one-liner, manual steps, uninstall
 └── docs/superpowers/…    # this spec + the implementation plan
@@ -81,15 +79,16 @@ overwrite). Contracts:
   the user's shell rc; verifies with `claude --version`. Depends on: network.
 - **obsidian.sh** `do_obsidian` — `brew install --cask obsidian` unless
   `/Applications/Obsidian.app` exists. Depends on: Homebrew.
-- **skills.sh** `do_skills` — for each folder in `skills/`, back up any existing
-  `~/.claude/skills/<name>` then copy. Idempotent. Depends on: nothing external.
-- **plugins.sh** `do_plugins` — **primary (hard-require) path:** register the
-  marketplace with `claude plugin marketplace add anthropics/claude-plugins-official`
-  then `claude plugin install <name>@claude-plugins-official --scope user` for each
-  curated plugin. Each call runs with stdin from `/dev/null` and wrapped in
+- **plugins.sh** `do_plugins` — installs **all** curated skills/plugins via their
+  public marketplaces (no vendoring). **Primary (hard-require) path:** register
+  three marketplaces — `claude plugin marketplace add anthropics/claude-plugins-official`,
+  `… add obra/superpowers-marketplace`, `… add forrestchang/andrej-karpathy-skills`
+  — then `claude plugin install <plugin>@<marketplace> --scope user` for each
+  curated item (see §5). Each call runs with stdin from `/dev/null` and wrapped in
   `timeout` so a fresh-machine trust prompt cannot hang `curl | bash`. **Fallback:**
   if any command exits non-zero (or times out), log it and print a manual
-  `/plugin install …` checklist instead. Depends on: `claude` on PATH.
+  `/plugin marketplace add …` + `/plugin install …` checklist instead. Depends on:
+  `claude` on PATH, network.
 - **vault.sh** `do_vault` — copy `vault/` to `~/Documents/Karpathy LLM Wiki/`
   only if the target doesn't already exist (never clobber a user's vault);
   optionally `open -a Obsidian` the vault at the end. Depends on: nothing.
@@ -97,11 +96,12 @@ overwrite). Contracts:
 ### 3.3 Orchestration & flow (`setup.sh`)
 
 ```
-do_preflight → do_claude_code → do_obsidian → do_skills → do_plugins → do_vault → final_message
+do_preflight → do_claude_code → do_obsidian → do_plugins → do_vault → final_message
 ```
 
 - **Flags:** `--skip-obsidian`, `--skip-plugins`, `--skip-vault`, `--yes`
-  (non-interactive), `--help`. Unknown flags error out.
+  (non-interactive), `--dry-run` (log intended actions, mutate nothing — used by
+  CI), `--help`. Unknown flags error out.
 - **final_message:** prints the one remaining manual step — start `claude`, run
   `/login` — plus where the vault landed and how to open it.
 - **Failure handling:** `set -euo pipefail`; each step prints what it's doing;
@@ -141,29 +141,28 @@ committed under `vault/`. Conventions:
   residual stream · layernorm · positional encoding · temperature/top-k
 - *MOCs:* Start Here · Zero-to-Hero index · LLM index
 
-**`.obsidian/` config (vendored):** graph view enabled, core plugins on
-(backlinks, outline, tags), a sensible default theme, a starter workspace.
+**`.obsidian/` config (committed in `vault/`):** graph view enabled, core plugins
+on (backlinks, outline, tags), a sensible default theme, a starter workspace.
 **No** community plugins (they require network fetch and break determinism).
 
-## 5. Curated skills & plugins
+## 5. Curated skills & plugins (all via public marketplaces — nothing vendored)
 
-**Vendored skills** (copied into `~/.claude/skills/`): the superpowers workflow
-set — `brainstorming`, `writing-plans`, `executing-plans`,
-`test-driven-development`, `systematic-debugging`, `requesting-code-review`,
-`receiving-code-review`, `using-git-worktrees`, `verification-before-completion`,
-`using-superpowers` — plus `karpathy-guidelines`.
+`do_plugins` registers three marketplaces and installs a curated set. New users
+get the canonical, maintained versions; we redistribute nothing.
 
-**Curated plugins** (registered + installed via CLI): `claude-code-setup`,
-`feature-dev`, `pr-review-toolkit`, `commit-commands`, `hookify` from the
-official `anthropics/claude-plugins-official` marketplace.
+| Marketplace (`claude plugin marketplace add …`) | Plugins installed (`claude plugin install <plugin>@<marketplace>`) |
+|---|---|
+| `obra/superpowers-marketplace` → name `superpowers-marketplace` | `superpowers` (the full workflow skill set: brainstorming, writing/executing-plans, TDD, systematic-debugging, requesting/receiving-code-review, using-git-worktrees, verification-before-completion, …) |
+| `forrestchang/andrej-karpathy-skills` → name `karpathy-skills` | `andrej-karpathy-skills` (the four coding-guideline principles) |
+| `anthropics/claude-plugins-official` → name `claude-plugins-official` | `claude-code-setup`, `feature-dev`, `pr-review-toolkit`, `commit-commands`, `hookify` |
+
+Marketplace **names** (the `@<marketplace>` half) come from each repo's
+`.claude-plugin/marketplace.json`; the plan verifies them at execution and the
+script can also install by bare plugin name when unambiguous.
 
 **Deliberately excluded:** the ~20 `claude-for-financial-services` plugins, the
 `gsd-*` fleet, and other niche tools — easy for a user to add later, too much for
 a first run.
-
-> **Source-of-truth note:** vendored skills are copied from Casey's machine at
-> build time. License/provenance for each bundled skill must be checked before
-> the repo is made public (see §7).
 
 ## 6. Non-goals (explicit)
 
@@ -183,10 +182,13 @@ a first run.
    `/plugin` checklist) kept as defense against a fresh-machine trust prompt.
 2. **Official Claude Code installer URL/flags** — pin the current canonical
    `install.sh` invocation for macOS.
-3. **Skill licensing/provenance** — verify each vendored skill is OK to
-   redistribute publicly before flipping the repo public.
+3. **Skill licensing/provenance** — ✅ **RESOLVED.** We no longer vendor any
+   skills; everything installs from its upstream public marketplace, so there is
+   nothing of others' to redistribute. The only original content is the Karpathy
+   vault (Casey's) and the scripts.
 4. **Homebrew on Apple Silicon vs Intel** — PATH differs
-   (`/opt/homebrew` vs `/usr/local`); preflight must handle both.
+   (`/opt/homebrew` [confirmed on this machine] vs `/usr/local`); preflight must
+   handle both.
 5. **PATH persistence** — appending `~/.local/bin` to the right shell rc
    (zsh default on macOS) without duplicating entries.
 
@@ -195,16 +197,17 @@ a first run.
 - **Lint:** `shellcheck` all scripts in CI (GitHub Actions).
 - **Idempotency:** run `setup.sh` twice in a clean environment; second run must
   make no destructive changes and report skips.
-- **Dry sandbox:** a `--skip-*` matrix smoke test (e.g. CI runs
-  `setup.sh --skip-obsidian --skip-plugins --skip-vault --yes` to exercise
-  preflight + claude-code paths without GUI installs).
+- **Dry run:** `setup.sh --dry-run --yes` logs every intended action and mutates
+  nothing — CI asserts the orchestrator dispatches all steps in order and that
+  the right `claude plugin` / `brew` / install commands would run.
 - **Vault sanity:** a script asserts every `[[wikilink]]` resolves to an existing
   note (no dangling links) and that required MOCs exist.
-- **Manual acceptance:** one full run on a clean macOS user account.
+- **Manual acceptance:** one full (non-dry) run on a clean macOS user account.
 
 ## 9. Uninstall / reversibility
 
-README documents how to undo: remove `~/Documents/Karpathy LLM Wiki/`, remove the
-copied `~/.claude/skills/<name>` folders (backups are kept as `*.bak.<n>`),
-`brew uninstall --cask obsidian`, and the Claude Code uninstall path. The script
-never deletes user data; it only adds or backs-up-then-replaces.
+README documents how to undo: remove `~/Documents/Karpathy LLM Wiki/`,
+`claude plugin uninstall <name>` for each installed plugin (and
+`claude plugin marketplace remove …`), `brew uninstall --cask obsidian`, and the
+Claude Code uninstall path. The script never deletes user data; for the vault it
+adds-only (never clobbers), and it backs up any shell-rc edit it makes.
