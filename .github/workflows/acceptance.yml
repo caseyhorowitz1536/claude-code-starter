@@ -1,0 +1,54 @@
+name: acceptance
+# Real end-to-end run of setup.sh on a fresh macOS VM (a "clean Mac").
+# Manual trigger only — it performs real installs and uses macOS runner minutes.
+on:
+  workflow_dispatch:
+
+jobs:
+  clean-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Baseline (confirm the machine is clean)
+        run: |
+          echo "macOS $(sw_vers -productVersion)  arch $(uname -m)"
+          if command -v claude >/dev/null; then echo "claude: PRESENT (not clean): $(claude --version)"; else echo "claude: absent (clean)"; fi
+          if [ -d /Applications/Obsidian.app ]; then echo "Obsidian: PRESENT (not clean)"; else echo "Obsidian: absent (clean)"; fi
+          echo "brew: $(brew --version | head -1)"
+
+      - name: Run the real installer (./setup.sh --yes)
+        id: run
+        continue-on-error: true
+        run: |
+          bash setup.sh --yes 2>&1 | tee /tmp/setup.log
+          echo "setup exit: ${PIPESTATUS[0]}"
+          # Make the freshly-installed CLI visible to later steps
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Diagnostics (non-fatal — this is what we came to learn)
+        if: always()
+        run: |
+          echo "===== Claude Code ====="
+          if [ -x "$HOME/.local/bin/claude" ]; then "$HOME/.local/bin/claude" --version; else echo "not at ~/.local/bin/claude — searching:"; find "$HOME" -maxdepth 4 -name claude -type f 2>/dev/null; fi
+          echo "===== Obsidian ====="
+          [ -d /Applications/Obsidian.app ] && echo "installed" || echo "NOT installed"
+          echo "===== Vault ====="
+          if [ -d "$HOME/Documents/Karpathy LLM Wiki" ]; then echo "notes: $(ls "$HOME/Documents/Karpathy LLM Wiki"/*.md 2>/dev/null | wc -l | tr -d ' ')"; else echo "NOT copied"; fi
+          echo "===== Plugin marketplaces ====="
+          "$HOME/.local/bin/claude" plugin marketplace list 2>&1 || echo "(command failed)"
+          echo "===== Installed plugins ====="
+          "$HOME/.local/bin/claude" plugin list 2>&1 || echo "(command failed)"
+          echo "===== Did plugin install fall back to the manual checklist? ====="
+          if grep -q "manual checklist" /tmp/setup.log; then echo "FALLBACK: yes — automated plugin install did not fully succeed (expected if auth/trust is required)"; else echo "FALLBACK: no — automated plugin path completed"; fi
+
+      - name: Verdict (hard requirements)
+        if: always()
+        run: |
+          fail=0
+          echo "Checking must-haves: Claude Code installed + vault copied with >=30 notes"
+          "$HOME/.local/bin/claude" --version >/dev/null 2>&1 || { echo "FAIL: claude not runnable"; fail=1; }
+          n=$(ls "$HOME/Documents/Karpathy LLM Wiki"/*.md 2>/dev/null | wc -l | tr -d ' ')
+          [ "${n:-0}" -ge 30 ] || { echo "FAIL: vault has only ${n:-0} notes"; fail=1; }
+          if [ "$fail" -ne 0 ]; then echo "ACCEPTANCE FAILED"; exit 1; fi
+          echo "ACCEPTANCE PASSED (Claude Code + vault). See diagnostics for Obsidian/plugin outcome."
