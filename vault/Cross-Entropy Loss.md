@@ -1,6 +1,6 @@
 ---
 title: Cross-Entropy Loss
-tags: [#concept, #loss, #training, #probability]
+tags: [concept, loss, training, probability]
 source: Neural Networks: Zero to Hero — "The spelled-out intro to language modeling" (makemore Part 1 & 2); "Let's build GPT" — training loop section
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Lets Build GPT — Self-Attention
-tags: [#zero-to-hero, #transformers, #attention, #self-attention, #gpt]
+tags: [zero-to-hero, transformers, attention, self-attention, gpt]
 source: Karpathy "Let's build GPT: from scratch, in code, spelled out" (YouTube 2023) — self-attention block walkthrough
 ---
 
@@ -24,7 +24,6 @@ Self-attention is the engine of every transformer. It replaces recurrence (RNNs)
 
 ## Related
 - [[Attention]] — mathematical generalization of the mechanism
-- [[Lets Build GPT — Self-Attention]] — this note
 - [[Residual Stream]] — self-attention writes into the residual stream
 - [[Positional Encoding]] — required because self-attention is position-agnostic
 - [[Softmax]] — converts raw dot-product scores to weights

@@ -1,6 +1,6 @@
 ---
 title: Tool Use and Agents
-tags: [#llm-overview, #agents, #tool-use, #inference]
+tags: [llm-overview, agents, tool-use, inference]
 source: Karpathy "Intro to Large Language Models" (2023) — agent/tool-use section; "Deep Dive into LLMs like ChatGPT" (2024) — System 2 thinking and multi-step inference
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: What Is an LLM
-tags: [#llm-overview, #transformers, #pretraining, #next-token-prediction]
+tags: [llm-overview, transformers, pretraining, next-token-prediction]
 source: Karpathy — "Intro to Large Language Models" (Nov 2023 talk) + "Deep Dive into LLMs like ChatGPT" (Feb 2025)
 ---
 

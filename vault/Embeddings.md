@@ -1,6 +1,6 @@
 ---
 title: Embeddings
-tags: [#concept, #embeddings, #representations, #tokens]
+tags: [concept, embeddings, representations, tokens]
 source: Karpathy "Neural Networks: Zero to Hero" — makemore MLP lecture; "Let's build GPT" — token embedding table; nanoGPT repo (model.py wte/wpe)
 ---
 

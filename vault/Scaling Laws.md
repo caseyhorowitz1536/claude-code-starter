@@ -1,6 +1,6 @@
 ---
 title: Scaling Laws
-tags: [#llm-overview, #scaling, #pretraining, #compute]
+tags: [llm-overview, scaling, pretraining, compute]
 source: Karpathy "Intro to Large Language Models" (2023) + "Deep Dive into LLMs like ChatGPT" (2024) — scaling section
 ---
 

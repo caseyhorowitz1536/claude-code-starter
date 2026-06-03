@@ -1,6 +1,6 @@
 ---
 title: Supervised Fine-Tuning
-tags: [#llm-overview, #sft, #fine-tuning, #alignment]
+tags: [llm-overview, sft, fine-tuning, alignment]
 source: Karpathy "Intro to Large Language Models" (Nov 2023) + "Deep Dive into LLMs like ChatGPT" (Feb 2025), Stage 2 of training pipeline
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Activations and Gradients
-tags: [#zero-to-hero, #activations, #gradients, #training-dynamics, #initialization]
+tags: [zero-to-hero, activations, gradients, training-dynamics, initialization]
 source: Neural Networks: Zero to Hero — "Building makemore Part 3: Activations & Gradients, BatchNorm" (Karpathy, 2022)
 ---
 

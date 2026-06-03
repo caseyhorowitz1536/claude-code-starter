@@ -1,6 +1,6 @@
 ---
 title: Hallucinations and Model Psychology
-tags: [#llm-overview, #hallucinations, #model-psychology, #alignment]
+tags: [llm-overview, hallucinations, model-psychology, alignment]
 source: Karpathy "Intro to Large Language Models" (Nov 2023) and "Deep Dive into LLMs like ChatGPT" (2024) — hallucination and model behavior sections
 ---
 

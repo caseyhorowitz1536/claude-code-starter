@@ -1,6 +1,6 @@
 ---
 title: Inference, Sampling, and Context Window
-tags: [#llm-overview, #inference, #sampling, #context-window, #autoregressive]
+tags: [llm-overview, inference, sampling, context-window, autoregressive]
 source: Karpathy "Intro to Large Language Models" (2023) — inference walkthrough; "Let's Build GPT" — generate() function and context window
 ---
 

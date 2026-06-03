@@ -1,6 +1,6 @@
 ---
 title: Gradient Descent
-tags: [#zero-to-hero, #optimization, #training, #backpropagation]
+tags: [zero-to-hero, optimization, training, backpropagation]
 source: Karpathy "Neural Networks: Zero to Hero" — micrograd series (lectures 1-2), makemore series (lecture 3)
 ---
 

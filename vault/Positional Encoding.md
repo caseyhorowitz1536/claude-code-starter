@@ -1,6 +1,6 @@
 ---
 title: Positional Encoding
-tags: [#concept, #transformer, #attention, #positional-encoding]
+tags: [concept, transformer, attention, positional-encoding]
 source: Karpathy "Let's build GPT from scratch" — positional embedding section; nanoGPT repo (model.py)
 ---
 

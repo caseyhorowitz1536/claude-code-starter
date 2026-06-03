@@ -1,6 +1,6 @@
 ---
 title: LayerNorm
-tags: [#concept, #normalization, #transformer, #training-stability]
+tags: [concept, normalization, transformer, training-stability]
 source: Karpathy "Let's build GPT from scratch" (nanoGPT walkthrough) — LayerNorm placement discussion; also covered in makemore MLP context for BatchNorm contrast
 ---
 

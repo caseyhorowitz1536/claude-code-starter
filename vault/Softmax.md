@@ -1,6 +1,6 @@
 ---
 title: Softmax
-tags: [#concept, #activation, #probability, #attention]
+tags: [concept, activation, probability, attention]
 source: Neural Networks Zero to Hero — "makemore" series (MLP lecture); "Let's build GPT" (attention softmax); nanoGPT source
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Reproducing GPT-2
-tags: [#zero-to-hero, #gpt, #transformer, #pretraining, #nanoGPT]
+tags: [zero-to-hero, gpt, transformer, pretraining, nanoGPT]
 source: Karpathy "Let's reproduce GPT-2 (124M)" video + nanoGPT repo
 ---
 

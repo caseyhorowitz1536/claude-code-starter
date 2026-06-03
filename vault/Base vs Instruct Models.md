@@ -1,6 +1,6 @@
 ---
 title: Base vs Instruct Models
-tags: [#llm-overview, #fine-tuning, #alignment, #pretraining]
+tags: [llm-overview, fine-tuning, alignment, pretraining]
 source: Karpathy "Intro to Large Language Models" (Nov 2023) + "Deep Dive into LLMs like ChatGPT" (Feb 2025), token prediction framing and SFT/RLHF sections
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: The LLM OS Analogy
-tags: [#llm-overview, #agents, #llm-systems, #inference]
+tags: [llm-overview, agents, llm-systems, inference]
 source: Karpathy — "Intro to Large Language Models" (2023), ~30-min talk; also referenced in "Deep Dive into LLMs like ChatGPT"
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Temperature and Top-k
-tags: [#concept, #sampling, #inference, #decoding]
+tags: [concept, sampling, inference, decoding]
 source: Karpathy "Let's build GPT" (sampling section); "Intro to Large Language Models" (inference walkthrough)
 ---
 

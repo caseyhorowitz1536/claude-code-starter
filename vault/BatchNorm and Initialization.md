@@ -1,6 +1,6 @@
 ---
 title: BatchNorm and Initialization
-tags: [#zero-to-hero, #batch-normalization, #initialization, #training-stability]
+tags: [zero-to-hero, batch-normalization, initialization, training-stability]
 source: Karpathy "Neural Networks: Zero to Hero" — makemore Part 3 (MLP with BatchNorm), YouTube lecture ~2:00–3:30 hr mark
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Makemore — MLP
-tags: [#zero-to-hero, #mlp, #language-model, #embeddings, #neural-network]
+tags: [zero-to-hero, mlp, language-model, embeddings, neural-network]
 source: Karpathy "Neural Networks: Zero to Hero" — makemore Part 3 (MLP), https://youtu.be/TCH_1BHY58I
 ---
 

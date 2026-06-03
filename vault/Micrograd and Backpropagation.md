@@ -1,6 +1,6 @@
 ---
 title: Micrograd and Backpropagation
-tags: [#zero-to-hero, #backpropagation, #autograd, #calculus]
+tags: [zero-to-hero, backpropagation, autograd, calculus]
 source: Karpathy "Neural Networks: Zero to Hero" — Lecture 1 "The spelled-out intro to neural networks and backpropagation: building micrograd" (YouTube, 2022); github.com/karpathy/micrograd
 ---
 

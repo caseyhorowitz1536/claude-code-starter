@@ -1,6 +1,6 @@
 ---
 title: Pretraining
-tags: [#llm-overview, #pretraining, #self-supervised-learning, #next-token-prediction]
+tags: [llm-overview, pretraining, self-supervised-learning, next-token-prediction]
 source: Karpathy — "Intro to Large Language Models" (Nov 2023 talk); "Deep Dive into LLMs like ChatGPT" (2024); nanoGPT repo
 ---
 

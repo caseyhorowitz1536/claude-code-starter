@@ -1,6 +1,6 @@
 ---
 title: Neuron, MLP, and Loss
-tags: [#zero-to-hero, #mlp, #neuron, #loss, #forward-pass]
+tags: [zero-to-hero, mlp, neuron, loss, forward-pass]
 source: Neural Networks: Zero to Hero — "The spelled-out intro to neural networks and backpropagation: building micrograd" (micrograd repo); "Let's build makemore Part 2: MLP"
 ---
 

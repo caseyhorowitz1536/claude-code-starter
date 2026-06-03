@@ -1,6 +1,6 @@
 ---
 title: Makemore — Bigram Model
-tags: [#zero-to-hero, #language-model, #bigram, #probability, #makemore]
+tags: [zero-to-hero, language-model, bigram, probability, makemore]
 source: Karpathy "Neural Networks: Zero to Hero" — makemore Part 1 (YouTube + makemore repo)
 ---
 

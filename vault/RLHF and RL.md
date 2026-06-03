@@ -1,6 +1,6 @@
 ---
 title: RLHF and RL
-tags: [#llm-overview, #rlhf, #reinforcement-learning, #alignment, #fine-tuning]
+tags: [llm-overview, rlhf, reinforcement-learning, alignment, fine-tuning]
 source: Karpathy "Intro to Large Language Models" (Nov 2023) — RLHF section; "Deep Dive into LLMs like ChatGPT" (2024) — alignment stage
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Attention
-tags: [#concept, transformer, self-attention, mechanism]
+tags: [concept, transformer, self-attention, mechanism]
 source: Karpathy "Let's build GPT" (YouTube, 2023) — self-attention walkthrough; nanoGPT repo (model.py CausalSelfAttention class)
 ---
 

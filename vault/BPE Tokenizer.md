@@ -1,6 +1,6 @@
 ---
 title: BPE Tokenizer
-tags: [#zero-to-hero, tokenization, bpe, preprocessing]
+tags: [zero-to-hero, tokenization, bpe, preprocessing]
 source: Karpathy "Let's build the GPT Tokenizer" (YouTube, 2024); minbpe repo
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Residual Stream
-tags: [#concept, #transformer, #architecture, #residual-connections]
+tags: [concept, transformer, architecture, residual-connections]
 source: Karpathy "Let's build GPT" (nanoGPT walkthrough) — Block class and residual additions; also "Deep Dive into LLMs like ChatGPT" — transformer internals section
 ---
 
