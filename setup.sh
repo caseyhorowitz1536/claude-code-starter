@@ -52,9 +52,9 @@ main() {
 
   do_preflight
   do_claude_code
-  [[ "${SKIP_OBSIDIAN}" == "1" ]] && info "Skipping Obsidian (--skip-obsidian)" || do_obsidian
-  [[ "${SKIP_PLUGINS}"  == "1" ]] && info "Skipping plugins (--skip-plugins)"  || do_plugins
-  [[ "${SKIP_VAULT}"    == "1" ]] && info "Skipping vault (--skip-vault)"      || do_vault
+  if [[ "${SKIP_OBSIDIAN}" == "1" ]]; then info "Skipping Obsidian (--skip-obsidian)"; else do_obsidian; fi
+  if [[ "${SKIP_PLUGINS}"  == "1" ]]; then info "Skipping plugins (--skip-plugins)"; else do_plugins; fi
+  if [[ "${SKIP_VAULT}"    == "1" ]]; then info "Skipping vault (--skip-vault)"; else do_vault; fi
 
   final_message
 }

@@ -24,6 +24,7 @@ do_preflight() {
   if ! have brew; then
     info "Installing Homebrew"
     if [[ "${DRY_RUN}" == "1" ]]; then
+      # shellcheck disable=SC2016  # literal dry-run preview text; must NOT expand
       printf '[dry-run] /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\n'
     else
       NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
