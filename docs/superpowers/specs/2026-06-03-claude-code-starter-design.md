@@ -83,11 +83,13 @@ overwrite). Contracts:
   `/Applications/Obsidian.app` exists. Depends on: Homebrew.
 - **skills.sh** `do_skills` — for each folder in `skills/`, back up any existing
   `~/.claude/skills/<name>` then copy. Idempotent. Depends on: nothing external.
-- **plugins.sh** `do_plugins` — register the official marketplace(s) and install
-  the curated plugin list via the `claude` CLI. **Research item (§7):** confirm
-  the exact non-interactive `claude plugin` subcommands; if headless install is
-  unsupported, fall back to writing marketplace entries + printing a short
-  `/plugin install …` checklist for the user. Depends on: `claude` on PATH.
+- **plugins.sh** `do_plugins` — **primary (hard-require) path:** register the
+  marketplace with `claude plugin marketplace add anthropics/claude-plugins-official`
+  then `claude plugin install <name>@claude-plugins-official --scope user` for each
+  curated plugin. Each call runs with stdin from `/dev/null` and wrapped in
+  `timeout` so a fresh-machine trust prompt cannot hang `curl | bash`. **Fallback:**
+  if any command exits non-zero (or times out), log it and print a manual
+  `/plugin install …` checklist instead. Depends on: `claude` on PATH.
 - **vault.sh** `do_vault` — copy `vault/` to `~/Documents/Karpathy LLM Wiki/`
   only if the target doesn't already exist (never clobber a user's vault);
   optionally `open -a Obsidian` the vault at the end. Depends on: nothing.
@@ -174,10 +176,11 @@ a first run.
 
 ## 7. Risks & research items
 
-1. **`claude plugin` headless install** — confirm the exact non-interactive
-   subcommands (`claude plugin marketplace add …`, `claude plugin install …`).
-   If unsupported headlessly, degrade to: register marketplace + print a
-   `/plugin` checklist. *(Resolve during plan/spike.)*
+1. **`claude plugin` headless install** — ✅ **RESOLVED (2026-06-03, claude
+   2.1.162).** `claude plugin marketplace add <github-repo>` and `claude plugin
+   install <plugin>@<marketplace> --scope user` both exist and take non-interactive
+   flags. Hard-require path is primary; runtime fallback (timeout/non-zero →
+   `/plugin` checklist) kept as defense against a fresh-machine trust prompt.
 2. **Official Claude Code installer URL/flags** — pin the current canonical
    `install.sh` invocation for macOS.
 3. **Skill licensing/provenance** — verify each vendored skill is OK to
