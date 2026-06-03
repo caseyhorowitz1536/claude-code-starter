@@ -52,9 +52,9 @@ claude-code-starter/
 ├── setup.sh              # idempotent orchestrator; parses flags; sources lib/*.sh
 ├── lib/
 │   ├── common.sh         # logging, color, confirm, backup(), have() helpers; set -euo pipefail
-│   ├── preflight.sh      # assert macOS; ensure Xcode CLT; ensure Homebrew
+│   ├── preflight.sh      # assert macOS; ensure Xcode CLT (no Homebrew needed)
 │   ├── claude-code.sh    # official install.sh; ensure ~/.local/bin on PATH; verify
-│   ├── obsidian.sh       # brew install --cask obsidian (skip if present)
+│   ├── obsidian.sh       # download official .dmg → ~/Applications (brew fallback)
 │   ├── plugins.sh        # claude plugin marketplace add (×3) + install curated set
 │   └── vault.sh          # copy vault/ → ~/Documents/Karpathy LLM Wiki/ (no clobber)
 ├── vault/                # the pre-authored Karpathy LLM Wiki + .obsidian/ (see §4)
@@ -72,13 +72,18 @@ overwrite). Contracts:
   <path>` (moves to `<path>.bak.<n>`), `confirm <msg>` (honors
   `--yes`/non-interactive). No side effects on source.
 - **preflight.sh** `do_preflight` — exits non-zero with a clear message if not
-  macOS; triggers `xcode-select --install` if CLT missing; installs Homebrew via
-  the official script if `brew` absent. Depends on: network, `common.sh`.
+  macOS; triggers `xcode-select --install` if CLT missing (CLT provides `git`).
+  **No Homebrew** — nothing in the installer requires it, so there is no admin/sudo
+  step. Depends on: `common.sh`.
 - **claude-code.sh** `do_claude_code` — runs the official Claude Code `install.sh`
   if `claude` not found; ensures the install dir (`~/.local/bin`) is on `PATH` in
   the user's shell rc; verifies with `claude --version`. Depends on: network.
-- **obsidian.sh** `do_obsidian` — `brew install --cask obsidian` unless
-  `/Applications/Obsidian.app` exists. Depends on: Homebrew.
+- **obsidian.sh** `do_obsidian` — skip if Obsidian is already in `/Applications`
+  or `~/Applications`. Otherwise read `latestVersion` from Obsidian's public
+  `desktop-releases.json`, download `Obsidian-<ver>.dmg`, `hdiutil attach` it, and
+  copy `Obsidian.app` into `~/Applications` (no admin). Falls back to
+  `brew install --cask obsidian` only if the direct path fails **and** `brew` is
+  already present. Depends on: network.
 - **plugins.sh** `do_plugins` — installs **all** curated skills/plugins via their
   public marketplaces (no vendoring). **Primary (hard-require) path:** register
   three marketplaces — `claude plugin marketplace add anthropics/claude-plugins-official`,

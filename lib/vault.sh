@@ -18,8 +18,11 @@ do_vault() {
     ok "Vault installed"
   fi
 
-  if [[ "${DRY_RUN}" != "1" ]] && [[ -d "/Applications/Obsidian.app" ]] && confirm "Open the vault in Obsidian now?"; then
+  local obs=""
+  [[ -d "/Applications/Obsidian.app" ]] && obs="/Applications/Obsidian.app"
+  [[ -z "$obs" && -d "${HOME}/Applications/Obsidian.app" ]] && obs="${HOME}/Applications/Obsidian.app"
+  if [[ "${DRY_RUN}" != "1" ]] && [[ -n "$obs" ]] && confirm "Open the vault in Obsidian now?"; then
     # Opening the app is a nicety — never let it fail the installer.
-    run open -a Obsidian "$VAULT_DEST" || warn "Could not open Obsidian automatically — open the vault manually."
+    run open -a "$obs" "$VAULT_DEST" || warn "Could not open Obsidian automatically — open the vault manually."
   fi
 }

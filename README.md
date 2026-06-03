@@ -17,15 +17,19 @@ cd claude-code-starter
 ./setup.sh            # add --dry-run to preview, --help for options
 ```
 
-## What it does
-1. Installs **Homebrew** + **Xcode Command Line Tools** (if missing).
-2. Installs **Claude Code** (official installer) and puts it on your PATH.
-3. Installs **Obsidian** and drops the **Karpathy LLM Wiki** vault at
-   `~/Documents/Karpathy LLM Wiki`.
-4. Installs curated skills/plugins from their public marketplaces: **superpowers**
+## What it does — **no admin password required**
+1. Installs **Claude Code** (official installer) into `~/.local/bin` and puts it on your PATH.
+2. Installs **Obsidian** by downloading the official `.dmg` straight into
+   `~/Applications` (no Homebrew, no sudo) and drops the **Karpathy LLM Wiki**
+   vault at `~/Documents/Karpathy LLM Wiki`.
+3. Installs curated skills/plugins from their public marketplaces: **superpowers**
    (brainstorming, plans, TDD, debugging, code review…), **karpathy-guidelines**,
    and a few official plugins (`feature-dev`, `pr-review-toolkit`,
    `commit-commands`, `hookify`, `claude-code-setup`).
+
+Everything installs per-user, so you don't need to be an administrator. (On a
+truly fresh Mac it may install Xcode Command Line Tools — a one-time GUI click —
+to provide `git`.)
 
 ## After it finishes
 Open a new terminal, run `claude`, then `/login` in the session (browser auth).
@@ -36,7 +40,7 @@ Open a new terminal, run `claude`, then `/login` in the session (browser auth).
 ## Uninstall
 - Vault: `rm -rf ~/Documents/"Karpathy LLM Wiki"`
 - Plugins: `claude plugin uninstall <name>` (and `claude plugin marketplace remove <name>`)
-- Obsidian: `brew uninstall --cask obsidian`
+- Obsidian: `rm -rf ~/Applications/Obsidian.app` (or `/Applications/Obsidian.app`)
 - Claude Code: see the official uninstall docs.
 
 The installer is **idempotent** (safe to re-run) and **never clobbers** an

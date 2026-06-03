@@ -14,7 +14,7 @@ jobs:
         run: |
           echo "macOS $(sw_vers -productVersion)  arch $(uname -m)"
           if command -v claude >/dev/null; then echo "claude: PRESENT (not clean): $(claude --version)"; else echo "claude: absent (clean)"; fi
-          if [ -d /Applications/Obsidian.app ]; then echo "Obsidian: PRESENT (not clean)"; else echo "Obsidian: absent (clean)"; fi
+          if [ -d /Applications/Obsidian.app ] || [ -d "$HOME/Applications/Obsidian.app" ]; then echo "Obsidian: PRESENT (not clean)"; else echo "Obsidian: absent (clean)"; fi
           echo "brew: $(brew --version | head -1)"
 
       - name: Run the real installer (./setup.sh --yes)
@@ -32,7 +32,7 @@ jobs:
           echo "===== Claude Code ====="
           if [ -x "$HOME/.local/bin/claude" ]; then "$HOME/.local/bin/claude" --version; else echo "not at ~/.local/bin/claude — searching:"; find "$HOME" -maxdepth 4 -name claude -type f 2>/dev/null; fi
           echo "===== Obsidian ====="
-          [ -d /Applications/Obsidian.app ] && echo "installed" || echo "NOT installed"
+          if [ -d /Applications/Obsidian.app ] || [ -d "$HOME/Applications/Obsidian.app" ]; then echo "installed: $(ls -d /Applications/Obsidian.app "$HOME/Applications/Obsidian.app" 2>/dev/null | head -1)"; else echo "NOT installed"; fi
           echo "===== Vault ====="
           if [ -d "$HOME/Documents/Karpathy LLM Wiki" ]; then echo "notes: $(ls "$HOME/Documents/Karpathy LLM Wiki"/*.md 2>/dev/null | wc -l | tr -d ' ')"; else echo "NOT copied"; fi
           echo "===== Plugin marketplaces ====="
