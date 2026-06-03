@@ -20,29 +20,43 @@ do_preflight() {
     ok "Xcode Command Line Tools present"
   fi
 
-  # Homebrew
-  if ! have brew; then
+  # Homebrew — only needed for Obsidian, so skip it entirely when Obsidian is skipped.
+  local brew_url="https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh"
+  if [[ "${SKIP_OBSIDIAN:-0}" == "1" ]]; then
+    info "Skipping Homebrew (only needed for Obsidian, which is being skipped)"
+  elif have brew; then
+    ok "Homebrew present"
+  else
     info "Installing Homebrew"
     if [[ "${DRY_RUN}" == "1" ]]; then
       # shellcheck disable=SC2016  # literal dry-run preview text; must NOT expand
-      printf '[dry-run] /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\n'
+      printf '[dry-run] /bin/bash -c "$(curl -fsSL %s)"\n' "$brew_url"
+    elif [[ "${ASSUME_YES}" == "1" ]] || ! { true >/dev/tty; } 2>/dev/null; then
+      # Automation/CI: no terminal to type a password into — needs passwordless sudo.
+      info "Non-interactive mode — Homebrew install relies on passwordless sudo here."
+      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL "$brew_url")"
     else
-      NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      # Interactive user: let Homebrew prompt for the admin password. Read from
+      # /dev/tty so prompts work even when this script is run via `curl | bash`.
+      warn "Homebrew needs your Mac login password next (you must be an administrator)."
+      /bin/bash -c "$(curl -fsSL "$brew_url")" </dev/tty
     fi
-  else
-    ok "Homebrew present"
   fi
 
-  # Resolve brew prefix for Apple Silicon (/opt/homebrew) vs Intel (/usr/local)
+  # Resolve brew prefix (Apple Silicon /opt/homebrew vs Intel /usr/local) and load
+  # it into this process — only if Homebrew is actually present.
   if have brew; then
     BREW_PREFIX="$(brew --prefix)"
   elif [[ -x /opt/homebrew/bin/brew ]]; then
     BREW_PREFIX=/opt/homebrew
-  else
+  elif [[ -x /usr/local/bin/brew ]]; then
     BREW_PREFIX=/usr/local
+  else
+    BREW_PREFIX=""
   fi
-  export BREW_PREFIX
-  # Make brew available in this process if freshly installed
-  [[ -x "${BREW_PREFIX}/bin/brew" ]] && eval "$("${BREW_PREFIX}/bin/brew" shellenv)" || true
-  ok "Homebrew prefix: ${BREW_PREFIX}"
+  if [[ -n "${BREW_PREFIX}" ]]; then
+    export BREW_PREFIX
+    eval "$("${BREW_PREFIX}/bin/brew" shellenv)" 2>/dev/null || true
+    ok "Homebrew prefix: ${BREW_PREFIX}"
+  fi
 }
