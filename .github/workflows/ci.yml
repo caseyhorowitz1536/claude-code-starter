@@ -1,0 +1,34 @@
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          shellcheck setup.sh bootstrap.sh lib/*.sh tools/*.sh tests/*.sh
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tests/run.sh
+  vault:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tools/check-vault-links.sh
+  dryrun:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: orchestrator dry-run
+        run: |
+          out="$(bash setup.sh --dry-run --yes)"
+          echo "$out"
+          for marker in "Preflight" "Claude Code" "Obsidian" "Skills & plugins" "Karpathy LLM Wiki vault" "Done"; do
+            echo "$out" | grep -q "$marker" || { echo "missing step: $marker"; exit 1; }
+          done
