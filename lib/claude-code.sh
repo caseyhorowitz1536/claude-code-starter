@@ -6,8 +6,8 @@ _ensure_local_bin_on_path() {
   local bindir="${HOME}/.local/bin" rc="${HOME}/.zshrc"
   local line="export PATH=\"\$HOME/.local/bin:\$PATH\""
   case ":${PATH}:" in *":${bindir}:"*) ;; *) export PATH="${bindir}:${PATH}";; esac
-  if [[ -f "$rc" ]] && grep -qF '.local/bin' "$rc"; then
-    ok "~/.local/bin already in ${rc}"
+  if [[ -f "$rc" ]] && grep -qxF "$line" "$rc"; then
+    ok "$HOME/.local/bin already in ${rc}"
     return 0
   fi
   info "Adding ~/.local/bin to PATH in ${rc}"

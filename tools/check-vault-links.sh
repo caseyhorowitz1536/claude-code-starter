@@ -19,6 +19,8 @@ done
 # Every [[link]] (strip alias after |, strip #heading) must resolve to a file
 while IFS= read -r link; do
   base="${link%%|*}"; base="${base%%#*}"
+  # Trim leading and trailing whitespace (handles "[[Note | alias]]" spaced syntax)
+  base="$(printf '%s' "$base" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
   [[ -z "$base" ]] && continue
   if [[ ! -f "${VAULT}/${base}.md" ]] && ! grep -qxF "$base" <<<"$existing"; then
     echo "DANGLING link: [[${link}]]"; fail=1

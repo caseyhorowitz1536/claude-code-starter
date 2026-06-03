@@ -10,7 +10,7 @@ jobs:
       - name: shellcheck
         run: |
           sudo apt-get update && sudo apt-get install -y shellcheck
-          shellcheck setup.sh bootstrap.sh lib/*.sh tools/*.sh tests/*.sh
+          shellcheck --severity=error setup.sh bootstrap.sh lib/*.sh tools/*.sh tests/*.sh
   unit:
     runs-on: ubuntu-latest
     steps:

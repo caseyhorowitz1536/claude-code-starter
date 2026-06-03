@@ -10,11 +10,13 @@ test_run_dryrun_echoes() {
   local out; out="$(run mkdir /tmp/should_not_exist_xyz 2>&1)"
   assert_contains "$out" '[dry-run] mkdir /tmp/should_not_exist_xyz' 'run echoes in dry-run'
   assert_ok '[[ ! -e /tmp/should_not_exist_xyz ]]' 'run did not execute in dry-run'
+  # shellcheck disable=SC2034  # DRY_RUN is exported and read by sourced lib functions
   DRY_RUN=0
 }
 
 test_backup_renames() {
   local d; d="$(mktemp -d)"; echo hi > "$d/f"
+  # shellcheck disable=SC2034  # DRY_RUN is read by sourced lib functions
   DRY_RUN=0
   backup "$d/f"
   assert_ok "[[ -e '$d/f.bak.1' && ! -e '$d/f' ]]" 'backup moves to .bak.1'
