@@ -13,7 +13,19 @@ do_preflight() {
     err "This installer supports macOS only (detected $(uname -s)). Aborting."
     return 1
   fi
-  ok "macOS detected ($(sw_vers -productVersion 2>/dev/null || echo '?'))"
+
+  # Claude Code's native app is built for macOS 13 (Ventura)+. On older macOS the
+  # binary aborts at launch with a cryptic dyld error, so fail early and clearly.
+  local osver major
+  osver="$(sw_vers -productVersion 2>/dev/null || echo 0)"
+  major="${osver%%.*}"
+  if [[ "${major:-0}" -lt 13 ]]; then
+    err "Claude Code needs macOS 13 (Ventura) or newer — this Mac is on ${osver}."
+    err "Update macOS (Apple menu → System Settings → Software Update), then re-run."
+    err "If this Mac can't update to Ventura, Claude Code can't run on it — use a newer Mac, or Claude in a browser at https://claude.ai."
+    return 1
+  fi
+  ok "macOS detected (${osver})"
 
   # Xcode Command Line Tools provide git (the one-liner needs it to clone).
   if ! xcode-select -p >/dev/null 2>&1; then
