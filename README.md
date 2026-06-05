@@ -70,7 +70,7 @@ Before piping `bootstrap.sh` into your shell, you can confirm its integrity:
 
 ```bash
 shasum -a 256 bootstrap.sh
-# 862c3ab8cb148bba339e0163aecf923eec85c51541935be9ff1994788575d993  bootstrap.sh
+# 5c552eb81933e69b0199aa8b955a368ffeb88b2b91d590610e6b64342f59f657  bootstrap.sh
 ```
 
 The installer is **idempotent** (safe to re-run) and **never clobbers** an

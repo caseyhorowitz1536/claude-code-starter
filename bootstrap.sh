@@ -53,8 +53,11 @@ main() {
   exec bash "${DEST}/setup.sh" "$@"
 }
 
-# Only run main when executed (not sourced, and not when BOOTSTRAP_NO_MAIN is set
-# for tests). main is invoked on the LAST line so a truncated pipe is a no-op.
-if [[ "${BASH_SOURCE[0]}" == "${0}" && -z "${BOOTSTRAP_NO_MAIN:-}" ]]; then
+# Run main unless a test opts out (BOOTSTRAP_NO_MAIN). Invoked on the LAST line, so a
+# truncated `curl | bash` download defines functions but never executes — a no-op.
+# Do NOT gate on "${BASH_SOURCE[0]}" == "$0": under `curl | bash` the script is read
+# from stdin, BASH_SOURCE is empty, and `set -u` would abort with
+# "BASH_SOURCE[0]: unbound variable" before main ever runs.
+if [[ -z "${BOOTSTRAP_NO_MAIN:-}" ]]; then
   main "$@"
 fi

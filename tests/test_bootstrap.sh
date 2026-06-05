@@ -36,3 +36,29 @@ GITEOF
   assert_ok "[[ $rc -eq 0 ]]" 'latest_ref does not abort on a large tag list'
   assert_contains "$out" 'v0.5000.0' 'latest_ref returns the newest tag'
 }
+test_bootstrap_pipe_safe_under_set_u() {
+  # Simulates `curl ... | bash`: the script is read from STDIN, so BASH_SOURCE is
+  # empty. Must NOT abort with `set -u` 'unbound variable'. BOOTSTRAP_NO_MAIN keeps
+  # the install from running during the test.
+  local out rc=0
+  out="$( BOOTSTRAP_NO_MAIN=1 bash < "$ROOT/bootstrap.sh" 2>&1 )" || rc=$?
+  assert_eq "$rc" 0 'bootstrap read from stdin (pipe) exits 0 under set -u'
+  case "$out" in
+    *"unbound variable"*) assert_eq 1 0 'no unbound-variable error on the pipe path' ;;
+    *) assert_eq 0 0 'no unbound-variable error on the pipe path' ;;
+  esac
+}
+test_bootstrap_pipe_runs_main() {
+  # Regression: the old BASH_SOURCE==$0 guard skipped main entirely under curl|bash.
+  # With a failing stubbed git, main must still RUN (and then fail), not be skipped.
+  local stub home out rc=0
+  stub="$(mktemp -d)"; home="$(mktemp -d)"
+  printf '#!/usr/bin/env bash\necho "stub-git" >&2\nexit 128\n' > "$stub/git"; chmod +x "$stub/git"
+  out="$( HOME="$home" PATH="$stub:$PATH" CCS_REF="v0.0.0-test" bash < "$ROOT/bootstrap.sh" 2>&1 )" || rc=$?
+  rm -rf "$stub" "$home"
+  assert_ok "[[ $rc -ne 0 ]]" 'pipe path with failing git exits non-zero (main ran)'
+  case "$out" in
+    *"Cloning"*|*"stub-git"*) assert_eq 0 0 'main executed on the pipe path' ;;
+    *) assert_eq 1 0 'main executed on the pipe path' ;;
+  esac
+}
