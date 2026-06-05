@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(pwd)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(find:*)",
+      "Bash(which:*)",
+      "Bash(git status)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(curl http:*)",
+      "Bash(wget:*)"
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'printf \"%s\" \"$(basename \"$PWD\")\"; b=$(git branch --show-current 2>/dev/null); [ -n \"$b\" ] && printf \" (%s)\" \"$b\"; true'"
+  }
+}
