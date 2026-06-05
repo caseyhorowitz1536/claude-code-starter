@@ -19,3 +19,23 @@ test_flags() {
 test_unknown_flag_fails() {
   if ( parse_args --bogus ) >/dev/null 2>&1; then assert_eq 1 0 'unknown flag should fail'; else assert_eq 0 0 'unknown flag fails'; fi
 }
+test_new_skip_flags() {
+  parse_args --skip-config --skip-mcp
+  assert_eq "$SKIP_CONFIG" 1 '--skip-config'
+  assert_eq "$SKIP_MCP" 1 '--skip-mcp'
+}
+test_verify_flag() {
+  parse_args --verify
+  assert_eq "$VERIFY_ONLY" 1 '--verify sets VERIFY_ONLY'
+}
+test_skip_flag_matrix() {
+  local combos=("" "--skip-obsidian" "--skip-plugins" "--skip-vault" "--skip-config" "--skip-mcp" \
+    "--skip-obsidian --skip-plugins --skip-vault --skip-config --skip-mcp")
+  local c
+  for c in "${combos[@]}"; do
+    parse_args $c
+    case "$c" in *obsidian*) assert_eq "$SKIP_OBSIDIAN" 1 "obsidian gated [$c]";; *) assert_eq "$SKIP_OBSIDIAN" 0 "obsidian on [$c]";; esac
+    case "$c" in *config*)   assert_eq "$SKIP_CONFIG"  1 "config gated [$c]";;   *) assert_eq "$SKIP_CONFIG"  0 "config on [$c]";; esac
+    case "$c" in *mcp*)      assert_eq "$SKIP_MCP"     1 "mcp gated [$c]";;      *) assert_eq "$SKIP_MCP"     0 "mcp on [$c]";; esac
+  done
+}
