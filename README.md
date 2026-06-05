@@ -1,7 +1,8 @@
 # claude-code-starter
 
 One command to set up Claude Code on a fresh **Mac**, plus Obsidian with a
-ready-made **Andrej Karpathy LLM wiki**, plus a curated set of starter skills.
+ready-made vault (an **Andrej Karpathy LLM wiki** and a **Using Claude Code**
+wiki) wired into Claude Code over MCP, plus a curated set of starter skills.
 
 ## Quick start
 
@@ -20,9 +21,15 @@ cd claude-code-starter
 ## What it does — **no admin password required**
 1. Installs **Claude Code** (official installer) into `~/.local/bin` and puts it on your PATH.
 2. Installs **Obsidian** by downloading the official `.dmg` straight into
-   `~/Applications` (no Homebrew, no sudo) and drops the **Karpathy LLM Wiki**
-   vault at `~/Documents/Karpathy LLM Wiki`.
-3. Installs curated skills/plugins from their public marketplaces: **superpowers**
+   `~/Applications` (no Homebrew, no sudo) and drops a single vault at
+   `~/Documents/Claude Code Starter` containing both the **Andrej Karpathy LLM
+   wiki** and a **Using Claude Code** wiki (how to actually drive Claude Code:
+   skills, plans, MCP, settings…).
+3. **Connects the vault to Claude Code** via the `obsidian-vault` MCP server, so
+   Claude can read and write your notes directly (read+write, no API key).
+4. Installs a conservative starter `~/.claude/settings.json` — **only if you
+   don't already have one** (it never overwrites your existing settings).
+5. Installs curated skills/plugins from their public marketplaces: **superpowers**
    (brainstorming, plans, TDD, debugging, code review…), **karpathy-guidelines**,
    and a few official plugins (`feature-dev`, `pr-review-toolkit`,
    `commit-commands`, `hookify`, `claude-code-setup`).
@@ -34,14 +41,37 @@ to provide `git`.)
 ## After it finishes
 Open a new terminal, run `claude`, then `/login` in the session (browser auth).
 
+To confirm everything installed correctly, run `setup.sh --verify` (health checks
+only). To confirm the vault is wired into Claude Code, run
+`claude mcp get obsidian-vault`.
+
 ## Options
-`--skip-obsidian` · `--skip-plugins` · `--skip-vault` · `--yes` · `--dry-run` · `--help`
+`--skip-obsidian` · `--skip-plugins` · `--skip-vault` · `--skip-config` (don't
+write the starter `settings.json`) · `--skip-mcp` (don't connect the vault via
+MCP) · `--verify` (run health checks only, then exit) · `--yes` · `--dry-run` ·
+`--help`
+
+Set `CCS_REF=<tag>` to pin or override the release the bootstrap installs (it
+defaults to the latest `v*` tag), e.g. `CCS_REF=v0.2.0 ./bootstrap.sh`.
 
 ## Uninstall
-- Vault: `rm -rf ~/Documents/"Karpathy LLM Wiki"`
+- Vault: `rm -rf ~/Documents/"Claude Code Starter"`
+- Vault link (used by MCP): `rm -f ~/.claude-code-vault`
+- MCP connection: `claude mcp remove obsidian-vault`
 - Plugins: `claude plugin uninstall <name>` (and `claude plugin marketplace remove <name>`)
 - Obsidian: `rm -rf ~/Applications/Obsidian.app` (or `/Applications/Obsidian.app`)
 - Claude Code: see the official uninstall docs.
+
+The starter `~/.claude/settings.json` is only created if you had none, so there's
+nothing to undo unless you let it write that file.
+
+## Verify the bootstrap script
+Before piping `bootstrap.sh` into your shell, you can confirm its integrity:
+
+```bash
+shasum -a 256 bootstrap.sh
+# 286d8b115ceabea79145f96f2d1ea726b6e035aab0069921f36d2444c838bd86  bootstrap.sh
+```
 
 The installer is **idempotent** (safe to re-run) and **never clobbers** an
 existing vault; any shell-rc edit it makes is appended, not overwritten.
