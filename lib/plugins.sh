@@ -18,6 +18,8 @@ PLUGINS=(
   "pr-review-toolkit@claude-plugins-official"
   "commit-commands@claude-plugins-official"
   "hookify@claude-plugins-official"
+  "skill-creator@claude-plugins-official"
+  "mcp-builder@claude-plugins-official"
 )
 
 # Run a claude subcommand non-interactively: no stdin (so a trust prompt can't
