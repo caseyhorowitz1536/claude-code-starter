@@ -29,6 +29,22 @@ jobs:
         run: |
           out="$(bash setup.sh --dry-run --yes)"
           echo "$out"
-          for marker in "Preflight" "Claude Code" "Obsidian" "Skills & plugins" "Karpathy LLM Wiki vault" "Done"; do
+          for marker in "Preflight" "Claude Code" "Obsidian" "Skills & plugins" "Obsidian vault" "MCP" "Verify" "Done"; do
             echo "$out" | grep -q "$marker" || { echo "missing step: $marker"; exit 1; }
           done
+  idempotent:
+    name: idempotent double-run (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: first dry-run
+        run: bash setup.sh --dry-run --yes
+      - name: second dry-run must be clean + complete
+        run: |
+          out="$(bash setup.sh --dry-run --yes)"
+          echo "$out"
+          echo "$out" | grep -q '=== Done ===' || { echo 'second run did not complete'; exit 1; }
