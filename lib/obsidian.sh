@@ -37,7 +37,7 @@ do_obsidian() {
       warn "Homebrew install also failed — install Obsidian manually from https://obsidian.md"
     fi
   else
-    warn "Could not install Obsidian automatically. Download it from https://obsidian.md, then open the vault at ~/Documents/Karpathy LLM Wiki."
+    warn "Could not install Obsidian automatically. Download it from https://obsidian.md, then open the vault at ~/Documents/Claude Code Starter."
   fi
 }
 

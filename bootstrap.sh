@@ -17,8 +17,15 @@ need_cmd() {
 
 # Echo the newest vX.Y.Z tag, or empty if none / offline.
 latest_ref() {
-  git ls-remote --tags --refs --sort=-v:refname "${REPO_URL}" 'v*' 2>/dev/null \
-    | head -1 | sed 's#.*/##'
+  # Capture the full ref list first, THEN take the newest via parameter expansion.
+  # Piping git straight into `head -1` closes the pipe early; under `set -o pipefail`
+  # that SIGPIPEs git (exit 141) and would abort the installer before the 'main'
+  # fallback. --sort=-v:refname puts the newest tag first.
+  local out first
+  out="$(git ls-remote --tags --refs --sort=-v:refname "${REPO_URL}" 'v*' 2>/dev/null || true)"
+  [[ -n "${out}" ]] || return 0
+  first="${out%%$'\n'*}"        # first (newest) line
+  printf '%s\n' "${first##*/}"  # strip the refs/tags/ prefix
 }
 
 main() {

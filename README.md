@@ -32,7 +32,7 @@ cd claude-code-starter
 5. Installs curated skills/plugins from their public marketplaces: **superpowers**
    (brainstorming, plans, TDD, debugging, code review…), **karpathy-guidelines**,
    and a few official plugins (`feature-dev`, `pr-review-toolkit`,
-   `commit-commands`, `hookify`, `claude-code-setup`).
+   `commit-commands`, `hookify`, `claude-code-setup`, `skill-creator`).
 
 Everything installs per-user, so you don't need to be an administrator. (On a
 truly fresh Mac it may install Xcode Command Line Tools — a one-time GUI click —
@@ -70,7 +70,7 @@ Before piping `bootstrap.sh` into your shell, you can confirm its integrity:
 
 ```bash
 shasum -a 256 bootstrap.sh
-# 286d8b115ceabea79145f96f2d1ea726b6e035aab0069921f36d2444c838bd86  bootstrap.sh
+# 862c3ab8cb148bba339e0163aecf923eec85c51541935be9ff1994788575d993  bootstrap.sh
 ```
 
 The installer is **idempotent** (safe to re-run) and **never clobbers** an

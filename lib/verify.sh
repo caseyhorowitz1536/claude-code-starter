@@ -37,7 +37,7 @@ do_verify() {
   # warnings: plugins + settings
   if have claude; then
     local p list; list="$(claude plugin list </dev/null 2>/dev/null || true)"
-    for p in superpowers andrej-karpathy-skills feature-dev pr-review-toolkit commit-commands hookify; do
+    for p in superpowers andrej-karpathy-skills claude-code-setup feature-dev pr-review-toolkit commit-commands hookify skill-creator; do
       case "$list" in *"$p"*) _pass "plugin: $p";; *) _warnv "plugin not found: $p (re-run setup.sh)";; esac
     done
   fi
