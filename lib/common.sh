@@ -46,3 +46,19 @@ confirm() {
   read -r reply
   [[ "$reply" == [yY]* ]]
 }
+
+# fatal MSG -> print red error to stderr and exit 1.
+fatal() { err "$*"; exit 1; }
+
+# need_cmd CMD -> fatal with an actionable hint if CMD is not on PATH.
+need_cmd() {
+  have "$1" && return 0
+  case "$1" in
+    git) fatal "'git' is required. Install Xcode Command Line Tools: xcode-select --install" ;;
+    npx|node) fatal "'$1' is required (Node.js 18+). Install Node from https://nodejs.org, then re-run." ;;
+    *) fatal "'$1' is required but was not found on PATH." ;;
+  esac
+}
+
+# ensure CMD ARGS... -> run; fatal if it fails. For must-succeed mutating steps.
+ensure() { "$@" || fatal "command failed: $*"; }

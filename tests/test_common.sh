@@ -28,3 +28,27 @@ test_backup_noop_when_absent() {
   assert_ok "backup '$d/missing'" 'backup is a no-op when target absent'
   rm -rf "$d"
 }
+
+test_need_cmd_ok() {
+  # a command that exists returns 0 and prints nothing fatal
+  assert_ok "need_cmd ls" 'need_cmd passes for an existing command'
+}
+test_need_cmd_missing() {
+  # a bogus command must make need_cmd exit non-zero (run in a subshell so it
+  # doesn't kill the test runner) and mention the command name. `|| rc=$?` keeps
+  # the failing substitution in a tested context so a leaked `set -e` (sourced
+  # from setup.sh by other test files) can't abort the runner.
+  local out rc=0
+  out="$( ( need_cmd definitely_not_a_real_cmd_xyz ) 2>&1 )" || rc=$?
+  assert_ok "[[ $rc -ne 0 ]]" 'need_cmd exits non-zero for a missing command'
+  assert_contains "$out" 'definitely_not_a_real_cmd_xyz' 'need_cmd names the missing command'
+}
+test_ensure_propagates_failure() {
+  # `|| rc=$?` keeps the failing command in a tested context so a leaked `set -e`
+  # (sourced from setup.sh by other test files) can't abort the runner.
+  local rc=0; ( ensure false ) >/dev/null 2>&1 || rc=$?
+  assert_ok "[[ $rc -ne 0 ]]" 'ensure exits non-zero when the command fails'
+}
+test_ensure_passes_through() {
+  assert_ok "ensure true" 'ensure returns 0 when the command succeeds'
+}
