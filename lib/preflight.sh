@@ -10,6 +10,12 @@ do_preflight() {
   step "Preflight"
 
   if [[ "$(uname -s)" != "Darwin" ]]; then
+    # A real install is macOS-only, but a --dry-run mutates nothing and is useful
+    # for smoke-testing the orchestrator on Linux CI, so allow it there.
+    if [[ "${DRY_RUN}" == "1" ]]; then
+      warn "Non-macOS ($(uname -s)) detected — dry-run only; a real install is macOS-only."
+      return 0
+    fi
     err "This installer supports macOS only (detected $(uname -s)). Aborting."
     return 1
   fi
