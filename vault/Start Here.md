@@ -1,19 +1,19 @@
 ---
 title: Start Here
 tags: [moc]
-source: Andrej Karpathy — Zero to Hero + LLM talks
+source: claude-code-starter
 ---
 
-# Start Here — Andrej Karpathy LLM Wiki
+# Start Here
 
-A small, interlinked study vault distilled from Andrej Karpathy's public LLM material. Open the **graph view** (left sidebar) to explore visually.
+Welcome. This vault has two wikis:
 
-## Maps of content
-- [[Zero-to-Hero Index]] — build neural nets from scratch up to GPT
-- [[LLM Index]] — how modern LLMs are trained and behave
+## 🤖 [[Using Claude Code/Start Here|Using Claude Code]]
+Learn to drive the tool you just installed — skills, plan mode, hooks, MCP, and more.
 
-## Suggested path
-1. [[Micrograd and Backpropagation]]
-2. [[Makemore — Bigram Model]] → [[Makemore — MLP]]
-3. [[Lets Build GPT — Self-Attention]] → [[BPE Tokenizer]]
-4. [[What Is an LLM]] → [[Pretraining]] → [[Supervised Fine-Tuning]] → [[RLHF and RL]]
+## 🧠 Karpathy LLM Wiki
+Understand how LLMs work, from micrograd to GPT-2.
+- [[Start Here|Karpathy: Start Here]] · [[Zero-to-Hero Index]] · [[LLM Index]]
+
+> This vault is connected to Claude Code (MCP server `obsidian-vault`). Ask Claude
+> to summarize a note, add one, or link concepts together.
