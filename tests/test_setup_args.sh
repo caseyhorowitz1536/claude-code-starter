@@ -39,3 +39,13 @@ test_skip_flag_matrix() {
     case "$c" in *mcp*)      assert_eq "$SKIP_MCP"     1 "mcp gated [$c]";;      *) assert_eq "$SKIP_MCP"     0 "mcp on [$c]";; esac
   done
 }
+test_help_short_circuits() {
+  # Regression: `setup.sh --help` must print usage and NOT run the installer.
+  local out
+  out="$(bash "$ROOT/setup.sh" --help 2>&1)" || true
+  assert_contains "$out" 'Usage: setup.sh' '--help prints usage'
+  case "$out" in
+    *"=== Preflight ==="*) assert_eq 1 0 '--help must NOT run the installer' ;;
+    *) assert_eq 0 0 '--help does not run the installer' ;;
+  esac
+}

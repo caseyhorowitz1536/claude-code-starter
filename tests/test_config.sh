@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # shellcheck source=/dev/null
 source "$ROOT/lib/common.sh"
 source "$ROOT/lib/config.sh"

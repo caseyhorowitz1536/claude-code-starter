@@ -7,7 +7,7 @@ export REPO_DIR
 
 # Defaults (overridable by flags)
 DRY_RUN=0; ASSUME_YES=0
-SKIP_OBSIDIAN=0; SKIP_PLUGINS=0; SKIP_VAULT=0; SKIP_CONFIG=0; SKIP_MCP=0; VERIFY_ONLY=0
+SKIP_OBSIDIAN=0; SKIP_PLUGINS=0; SKIP_VAULT=0; SKIP_CONFIG=0; SKIP_MCP=0; VERIFY_ONLY=0; HELP_ONLY=0
 
 usage() {
   cat <<'EOF'
@@ -25,7 +25,7 @@ EOF
 }
 
 parse_args() {
-  DRY_RUN=0; ASSUME_YES=0; SKIP_OBSIDIAN=0; SKIP_PLUGINS=0; SKIP_VAULT=0; SKIP_CONFIG=0; SKIP_MCP=0; VERIFY_ONLY=0
+  DRY_RUN=0; ASSUME_YES=0; SKIP_OBSIDIAN=0; SKIP_PLUGINS=0; SKIP_VAULT=0; SKIP_CONFIG=0; SKIP_MCP=0; VERIFY_ONLY=0; HELP_ONLY=0
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --skip-obsidian) SKIP_OBSIDIAN=1 ;;
@@ -36,16 +36,18 @@ parse_args() {
       --verify)        VERIFY_ONLY=1 ;;
       --yes|-y)        ASSUME_YES=1 ;;
       --dry-run)       DRY_RUN=1 ;;
-      --help|-h)       usage; return 0 ;;
+      --help|-h)       HELP_ONLY=1 ;;
       *) printf 'Unknown option: %s\n' "$1" >&2; usage >&2; return 2 ;;
     esac
     shift
   done
-  export DRY_RUN ASSUME_YES SKIP_OBSIDIAN SKIP_PLUGINS SKIP_VAULT SKIP_CONFIG SKIP_MCP VERIFY_ONLY
+  export DRY_RUN ASSUME_YES SKIP_OBSIDIAN SKIP_PLUGINS SKIP_VAULT SKIP_CONFIG SKIP_MCP VERIFY_ONLY HELP_ONLY
 }
 
 main() {
   parse_args "$@"
+  # --help must NOT fall through into the installer (print usage and stop).
+  if [[ "${HELP_ONLY}" == "1" ]]; then usage; return 0; fi
   # shellcheck source=/dev/null
   source "${REPO_DIR}/lib/common.sh"
   for m in preflight claude-code obsidian plugins vault config mcp verify; do
