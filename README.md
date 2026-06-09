@@ -10,6 +10,13 @@ wiki) wired into Claude Code over MCP, plus a curated set of starter skills.
 curl -fsSL https://raw.githubusercontent.com/caseyhorowitz1536/claude-code-starter/main/bootstrap.sh | bash
 ```
 
+Short version (redirects to the same `bootstrap.sh` above — easier to type or
+read over the phone):
+
+```bash
+curl -fsSL https://tinyurl.com/2actfy4c | bash
+```
+
 Prefer to inspect first? Clone and run:
 
 ```bash
