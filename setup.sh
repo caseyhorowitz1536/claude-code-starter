@@ -50,7 +50,7 @@ main() {
   if [[ "${HELP_ONLY}" == "1" ]]; then usage; return 0; fi
   # shellcheck source=/dev/null
   source "${REPO_DIR}/lib/common.sh"
-  for m in preflight claude-code obsidian plugins vault config mcp verify; do
+  for m in preflight claude-code node obsidian plugins vault config mcp verify; do
     # shellcheck source=/dev/null
     source "${REPO_DIR}/lib/${m}.sh"
   done
@@ -75,17 +75,22 @@ main() {
   if [[ "${SKIP_OBSIDIAN}" == "1" ]]; then info "Skipping Obsidian (--skip-obsidian)"; else do_obsidian; fi
   if [[ "${SKIP_PLUGINS}"  == "1" ]]; then info "Skipping plugins (--skip-plugins)"; else do_plugins; fi
   if [[ "${SKIP_VAULT}"    == "1" ]]; then info "Skipping vault (--skip-vault)"; else do_vault; fi
-  if [[ "${SKIP_MCP}"      == "1" ]]; then info "Skipping MCP (--skip-mcp)"; else do_mcp; fi
-  do_verify || warn "Some post-install checks failed — run 'setup.sh --verify' for details."
+  if [[ "${SKIP_MCP}"      == "1" ]]; then info "Skipping MCP (--skip-mcp)"; else do_node; do_mcp; fi
+  local verified=1
+  do_verify || verified=0
 
-  final_message
+  final_message "${verified}"
 }
 
 final_message() {
   step "Done"
+  if [[ "${1:-1}" == "1" ]]; then
+    printf '%s\n\n' "${C_GREEN}Setup complete.${C_RESET}"
+  else
+    printf '%s\n' "${C_YELLOW}Setup finished, but some checks FAILED (see ✗ lines above).${C_RESET}"
+    printf '%s\n\n' "Fix what they say (usually: just re-run the same install command), then continue below."
+  fi
   cat <<EOF
-${C_GREEN}Setup complete.${C_RESET}
-
 Last step (one-time, requires a browser):
   1. Open a NEW terminal window (so PATH updates apply)
   2. Run:  claude
@@ -95,7 +100,7 @@ Your Claude Code vault is at:
   ~/Documents/Claude Code Starter    (open it in Obsidian)
 
 To check everything installed correctly, run:
-  setup.sh --verify
+  ${REPO_DIR}/setup.sh --verify
 
 Re-running this script is safe — it skips anything already installed.
 EOF

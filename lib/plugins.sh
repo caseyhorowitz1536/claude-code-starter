@@ -24,9 +24,11 @@ PLUGINS=(
 # Run a claude subcommand non-interactively: no stdin (so a trust prompt can't
 # hang), bounded by timeout. Returns the command's exit code.
 _claude() {
-  local t="timeout"; have timeout || t="" # gtimeout/none on some macs; degrade gracefully
   if [[ "${DRY_RUN}" == "1" ]]; then printf '[dry-run] claude %s\n' "$*"; return 0; fi
-  if [[ -n "$t" ]]; then ${t} 120 claude "$@" </dev/null; else claude "$@" </dev/null; fi
+  # macOS has no `timeout`; perl (always present) gives the same 120s watchdog.
+  if have timeout; then timeout 120 claude "$@" </dev/null
+  elif have perl; then perl -e 'alarm shift; exec @ARGV' 120 claude "$@" </dev/null
+  else claude "$@" </dev/null; fi
 }
 
 _print_manual_checklist() {

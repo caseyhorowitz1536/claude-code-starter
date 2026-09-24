@@ -2,6 +2,7 @@
 # do_vault: copy the bundled vault to ~/Documents/Claude Code Starter/ (never clobber).
 # Requires common.sh first. Expects $REPO_DIR to point at the repo root.
 
+# shellcheck disable=SC2034  # read by tests/test_vault.sh
 VAULT_DEST="${HOME}/Documents/Claude Code Starter"
 
 do_vault() {

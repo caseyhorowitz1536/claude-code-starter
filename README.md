@@ -32,8 +32,11 @@ cd claude-code-starter
    `~/Documents/Claude Code Starter` containing both the **Andrej Karpathy LLM
    wiki** and a **Using Claude Code** wiki (how to actually drive Claude Code:
    skills, plans, MCP, settings…).
-3. **Connects the vault to Claude Code** via the `obsidian-vault` MCP server, so
-   Claude can read and write your notes directly (read+write, no API key).
+3. **Connects the vault to Claude Code automatically** via the `obsidian-vault`
+   MCP server, so Claude can read and write your notes directly (read+write, no
+   API key, no Obsidian plugin). The server needs Node 18+; if you don't have it,
+   setup downloads the official Node LTS from nodejs.org into `~/.local/node`
+   (checksum-verified, no Homebrew, no sudo).
 4. Installs a conservative starter `~/.claude/settings.json` — **only if you
    don't already have one** (it never overwrites your existing settings).
 5. Installs curated skills/plugins from their public marketplaces: **superpowers**
@@ -41,15 +44,21 @@ cd claude-code-starter
    and a few official plugins (`feature-dev`, `pr-review-toolkit`,
    `commit-commands`, `hookify`, `claude-code-setup`, `skill-creator`).
 
-Everything installs per-user, so you don't need to be an administrator. (On a
-truly fresh Mac it may install Xcode Command Line Tools — a one-time GUI click —
-to provide `git`.)
+Everything installs per-user, so you don't need to be an administrator.
+
+**Brand-new Mac?** The first run may stop and open an Apple "Command Line Tools"
+window (it provides `git`). Click **Install**, wait for it to finish (5–15 min),
+then run the same command again. Teaching a group? Have everyone run
+`xcode-select --install` before the session so nobody waits on it live.
 
 ## After it finishes
 Open a new terminal, run `claude`, then `/login` in the session (browser auth).
+Then paste the prompt from [`docs/FIRST-RUN-PROMPT.md`](docs/FIRST-RUN-PROMPT.md)
+as your first message: Claude health-checks the install, tests the vault
+connection end-to-end, and sets the vault up as a second brain.
 
-To confirm everything installed correctly, run `setup.sh --verify` (health checks
-only). To confirm the vault is wired into Claude Code, run
+To confirm everything installed correctly, run
+`bash ~/.claude-code-starter/setup.sh --verify` (health checks only). To confirm the vault is wired into Claude Code, run
 `claude mcp get obsidian-vault`.
 
 ## Options
@@ -64,6 +73,7 @@ defaults to the latest `v*` tag), e.g. `CCS_REF=v0.2.0 ./bootstrap.sh`.
 ## Uninstall
 - Vault: `rm -rf ~/Documents/"Claude Code Starter"`
 - Vault link (used by MCP): `rm -f ~/.claude-code-vault`
+- Node (only if setup installed it): `rm -rf ~/.local/node ~/.local/bin/{node,npm,npx}`
 - MCP connection: `claude mcp remove obsidian-vault`
 - Plugins: `claude plugin uninstall <name>` (and `claude plugin marketplace remove <name>`)
 - Obsidian: `rm -rf ~/Applications/Obsidian.app` (or `/Applications/Obsidian.app`)
@@ -77,7 +87,7 @@ Before piping `bootstrap.sh` into your shell, you can confirm its integrity:
 
 ```bash
 shasum -a 256 bootstrap.sh
-# 5c552eb81933e69b0199aa8b955a368ffeb88b2b91d590610e6b64342f59f657  bootstrap.sh
+# daaf5b07dfd8ce4fa637948894a3b608005a6b96857dd3c00a66f7b459f8f473  bootstrap.sh
 ```
 
 The installer is **idempotent** (safe to re-run) and **never clobbers** an

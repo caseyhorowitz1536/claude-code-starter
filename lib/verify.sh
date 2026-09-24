@@ -18,24 +18,27 @@ do_verify() {
   if have claude; then _pass "claude on PATH ($(claude --version 2>/dev/null | head -1))"
   else _failv "claude not on PATH — open a new terminal, or re-run setup.sh"; fi
 
-  # critical: vault
-  if [[ -d "$vault" ]]; then _pass "vault present ($vault)"
-  else _failv "vault missing — re-run setup.sh (or with --skip-mcp)"; fi
-  if [[ -L "$link" ]]; then _pass "vault symlink resolves ($link)"
-  else _warnv "vault symlink $link missing — MCP may be unconfigured"; fi
+  # critical: vault (skipped if this run was told --skip-vault)
+  if [[ "${SKIP_VAULT:-0}" != "1" ]]; then
+    if [[ -d "$vault" ]]; then _pass "vault present ($vault)"
+    else _failv "vault missing — re-run setup.sh"; fi
+  fi
 
-  # node/npx (needed for MCP)
-  if have npx; then _pass "npx present"; else _warnv "npx/Node missing — needed for the vault MCP server"; fi
-
-  # critical: mcp registered
-  if have claude && claude mcp get obsidian-vault </dev/null >/dev/null 2>&1; then
-    _pass "MCP 'obsidian-vault' registered"
-  else
-    _failv "MCP 'obsidian-vault' not registered — see README, or re-run setup.sh"
+  # critical: node + vault link + mcp registered (skipped with --skip-mcp)
+  if [[ "${SKIP_MCP:-0}" != "1" ]]; then
+    if [[ -L "$link" && -d "$link" ]]; then _pass "vault symlink resolves ($link)"
+    else _warnv "vault symlink $link missing or broken — re-run setup.sh"; fi
+    if have npx; then _pass "npx present ($(node --version 2>/dev/null))"
+    else _failv "Node/npx missing — the vault MCP server needs it; re-run setup.sh"; fi
+    if have claude && claude mcp get obsidian-vault </dev/null >/dev/null 2>&1; then
+      _pass "MCP 'obsidian-vault' registered"
+    else
+      _failv "MCP 'obsidian-vault' not registered — re-run setup.sh"
+    fi
   fi
 
   # warnings: plugins + settings
-  if have claude; then
+  if have claude && [[ "${SKIP_PLUGINS:-0}" != "1" ]]; then
     local p list; list="$(claude plugin list </dev/null 2>/dev/null || true)"
     for p in superpowers andrej-karpathy-skills claude-code-setup feature-dev pr-review-toolkit commit-commands hookify skill-creator; do
       case "$list" in *"$p"*) _pass "plugin: $p";; *) _warnv "plugin not found: $p (re-run setup.sh)";; esac

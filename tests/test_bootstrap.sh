@@ -62,3 +62,28 @@ test_bootstrap_pipe_runs_main() {
     *) assert_eq 1 0 'main executed on the pipe path' ;;
   esac
 }
+test_bootstrap_stops_cleanly_without_clt() {
+  # Fresh Mac: Darwin + no Command Line Tools -> trigger the installer and exit 1
+  # with re-run instructions BEFORE touching git (whose /usr/bin shim would fail).
+  local stub home out rc=0
+  stub="$(mktemp -d)"; home="$(mktemp -d)"
+  printf '#!/usr/bin/env bash\necho Darwin\n' > "$stub/uname"
+  printf '#!/usr/bin/env bash\n[ "$1" = "-p" ] && exit 2; exit 0\n' > "$stub/xcode-select"
+  printf '#!/usr/bin/env bash\necho GIT-CALLED >&2; exit 1\n' > "$stub/git"
+  chmod +x "$stub"/*
+  out="$( HOME="$home" PATH="$stub:$PATH" bash "$ROOT/bootstrap.sh" 2>&1 )" || rc=$?
+  assert_ok "[[ $rc -ne 0 ]]" 'bootstrap exits non-zero when CLT are missing'
+  assert_contains "$out" 'run the SAME install command again' 'bootstrap tells the user to re-run after CLT'
+  local called=0; [[ "$out" == *GIT-CALLED* ]] && called=1
+  assert_eq "$called" 0 'bootstrap never calls the git shim without CLT'
+  rm -rf "$stub" "$home"
+}
+test_bootstrap_moves_non_git_dest_aside() {
+  local stub home rc=0
+  stub="$(mktemp -d)"; home="$(mktemp -d)"
+  mkdir -p "$home/.claude-code-starter"; touch "$home/.claude-code-starter/junk"
+  printf '#!/usr/bin/env bash\nexit 128\n' > "$stub/git"; chmod +x "$stub/git"
+  HOME="$home" PATH="$stub:$PATH" CCS_REF="v0.0.0-test" bash "$ROOT/bootstrap.sh" >/dev/null 2>&1 || rc=$?
+  assert_ok "[[ -f \"$home/.claude-code-starter.bak.1/junk\" ]]" 'non-git leftover dir is moved aside, not nested into'
+  rm -rf "$stub" "$home"
+}

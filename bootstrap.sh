@@ -28,12 +28,38 @@ latest_ref() {
   printf '%s\n' "${first##*/}"  # strip the refs/tags/ prefix
 }
 
+# Fresh Macs ship /usr/bin/git as an Apple shim: `command -v git` passes but the
+# first real git call pops the Xcode Command Line Tools dialog and fails. Detect
+# that up front, kick off the install, and tell the user exactly what to do.
+need_clt() {
+  [[ "$(uname -s)" == "Darwin" ]] || return 0
+  xcode-select -p >/dev/null 2>&1 && return 0
+  xcode-select --install >/dev/null 2>&1 || true
+  cat >&2 <<'MSG'
+
+  One-time step: macOS needs its "Command Line Tools" (they provide git).
+  A window just opened. Click "Install", wait for it to finish (5-15 min),
+  then run the SAME install command again.
+
+MSG
+  exit 1
+}
+
 main() {
+  need_clt
   need_cmd git
   local ref; ref="${CCS_REF:-$(latest_ref)}"
   if [[ -z "${ref}" ]]; then
     echo "! No release tag found; falling back to 'main'." >&2
     ref="main"
+  fi
+
+  # A leftover non-git folder (manual copy, interrupted run) would make `mv` nest
+  # the fresh clone inside it — move it aside instead.
+  if [[ -e "${DEST}" && ! -d "${DEST}/.git" ]]; then
+    local n=1; while [[ -e "${DEST}.bak.${n}" ]]; do n=$((n+1)); done
+    echo "• Moving old ${DEST} aside to ${DEST}.bak.${n}"
+    mv "${DEST}" "${DEST}.bak.${n}"
   fi
 
   if [[ -d "${DEST}/.git" ]]; then

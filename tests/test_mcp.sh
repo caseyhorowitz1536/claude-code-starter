@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck source=/dev/null
 source "$ROOT/lib/common.sh"
+source "$ROOT/lib/node.sh"
 source "$ROOT/lib/mcp.sh"
 
 test_mcp_dryrun_prints_intended_commands() {
@@ -21,4 +22,15 @@ test_mcp_real_skips_without_npx() {
   assert_eq "$rc" 0 'do_mcp returns 0 (graceful) when npx is missing'
   assert_contains "$out" 'Node' 'do_mcp explains Node is needed'
   rm -rf "$home" "$stub"
+}
+test_node_ok_rejects_old_node() {
+  local stub rc; stub="$(mktemp -d)"
+  printf '#!/usr/bin/env bash\necho v16.20.0\n' > "$stub/node"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$stub/npx"; chmod +x "$stub"/*
+  ( PATH="$stub:/usr/bin:/bin" node_ok ) && rc=0 || rc=$?
+  assert_ok "[[ $rc -ne 0 ]]" 'node_ok rejects Node < 18'
+  printf '#!/usr/bin/env bash\necho v22.1.0\n' > "$stub/node"
+  ( PATH="$stub:/usr/bin:/bin" node_ok ) && rc=0 || rc=$?
+  assert_eq "$rc" 0 'node_ok accepts Node 22'
+  rm -rf "$stub"
 }
