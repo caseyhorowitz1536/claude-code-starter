@@ -13,12 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Hide the runner's Node (simulate a fresh PC)
+      - name: Hide the runner's Node + Git (simulate a fresh PC)
         shell: powershell
         run: |
           Rename-Item 'C:\Program Files\nodejs' 'nodejs.hidden'
-          $env:Path = ($env:Path -split ';' | Where-Object { $_ -notmatch 'node' }) -join ';'
+          Rename-Item 'C:\Program Files\Git' 'Git.hidden'
+          $env:Path = ($env:Path -split ';' | Where-Object { $_ -notmatch 'node|\\Git\\' }) -join ';'
           if (Get-Command node -ErrorAction SilentlyContinue) { throw 'node still visible' }
+          if (Get-Command git -ErrorAction SilentlyContinue) { throw "git still visible: $((Get-Command git).Source)" }
           "Path=$env:Path" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
 
       - name: Run installer exactly like students (irm | iex), twice for idempotency
@@ -36,8 +38,9 @@ jobs:
         shell: powershell
         run: |
           $env:Path = [Environment]::GetEnvironmentVariable('Path','User') + ';' + [Environment]::GetEnvironmentVariable('Path','Machine')
-          $env:Path = ($env:Path -split ';' | Where-Object { $_ -notmatch 'Program Files\\nodejs' }) -join ';'
           claude --version
+          (Get-Command git).Source
+          git --version
           node --version
           (Get-Command node).Source
           $out = (claude mcp list 2>&1) -join "`n"
@@ -47,3 +50,8 @@ jobs:
           $v = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Claude Code Starter\Start Here.md'
           if (-not (Test-Path $v)) { throw 'vault not installed' }
           if (-not (Test-Path "$env:LOCALAPPDATA\Programs\Obsidian\Obsidian.exe")) { throw 'Obsidian not installed' }
+
+      - name: Un-hide Git so checkout's post-step can run
+        if: always()
+        shell: powershell
+        run: if (Test-Path 'C:\Program Files\Git.hidden') { Rename-Item 'C:\Program Files\Git.hidden' 'Git' }

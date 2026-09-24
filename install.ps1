@@ -51,10 +51,14 @@ function Refresh-Path {
 }
 
 # Run a native command with a timeout (seconds); returns its exit code, or -1 on timeout.
+# Args are quoted here because Start-Process flattens the array into one string.
 function Invoke-Timed([string]$exe, [string[]]$argList, [int]$secs = 180) {
-  $p = Start-Process -FilePath $exe -ArgumentList $argList -NoNewWindow -PassThru
+  $q = @($argList | ForEach-Object { if ($_ -match '[\s"]') { '"' + ($_ -replace '"', '\"') + '"' } else { $_ } })
+  if ($exe -match '\.(cmd|bat)$') { $q = @('/d', '/c', "`"$exe`"") + $q; $exe = $env:ComSpec }
+  $p = Start-Process -FilePath $exe -ArgumentList $q -NoNewWindow -PassThru
+  $null = $p.Handle   # without this, PS 5.1 reports ExitCode as $null
   if (-not $p.WaitForExit($secs * 1000)) { try { $p.Kill() } catch {}; return -1 }
-  return $p.ExitCode
+  return [int]$p.ExitCode
 }
 
 # Run a native command with stderr discarded. Windows PowerShell 5.1 turns native
@@ -67,8 +71,21 @@ function Quiet([scriptblock]$sb) {
 
 function Test-NodeOk {
   if (-not (Have 'node.exe') -or -not (Have 'npx.cmd')) { return $false }
-  $v = (Quiet { node.exe --version }) -replace '^v', ''
-  return ([int]($v.Split('.')[0]) -ge 18)
+  try {
+    $v = [string](Quiet { node.exe --version } | Select-Object -First 1)
+    if ($v -match '^v?(\d+)\.') { return ([int]$Matches[1] -ge 18) }
+  } catch {}
+  return $false
+}
+
+# The real claude.exe (an old npm install exposes claude.ps1/.cmd instead; the
+# .ps1 is blocked by the default execution policy, so never pick it).
+function Get-ClaudeExe {
+  foreach ($n in 'claude.exe', 'claude.cmd') {
+    $c = Get-Command $n -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($c) { return $c.Source }
+  }
+  return $null
 }
 
 Write-Host "Claude Code Starter (Windows) - setting up" -ForegroundColor White
@@ -78,37 +95,47 @@ Step 'Preflight'
 if (-not [Environment]::Is64BitOperatingSystem) { Bad 'Claude Code needs 64-bit Windows.'; return }
 $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64' -or $env:PROCESSOR_ARCHITEW6432 -eq 'ARM64') { 'arm64' } else { 'x64' }
 Ok "Windows $([Environment]::OSVersion.Version) ($arch)"
-$hasWinget = Have 'winget.exe'
-if (-not $hasWinget) { Warn 'winget not found - Git will need a manual install (https://git-scm.com/downloads/win).' }
 
 # --- Claude Code ----------------------------------------------------------
 Step 'Claude Code'
 $localBin = Join-Path $Home_ '.local\bin'
 Add-UserPath $localBin
-if (Have 'claude') {
+if (Get-ClaudeExe) {
   Ok "Claude Code already installed ($((Quiet { claude --version }) | Select-Object -First 1))"
 } else {
   Info 'Installing Claude Code via the official installer'
   # Child process: the official script may `exit`, which would kill this one.
   Quiet { powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm https://claude.ai/install.ps1 | iex" }
   Refresh-Path; Add-UserPath $localBin
-  if (Have 'claude') { Ok 'Claude Code installed' } else { Bad 'Claude Code install failed - see https://code.claude.com/docs/en/setup'; return }
+  if (Get-ClaudeExe) { Ok 'Claude Code installed' } else { Bad 'Claude Code install failed - see https://code.claude.com/docs/en/setup'; return }
 }
 
 # --- Git (plugins clone marketplaces with git; also gives Claude its Bash tool) ---
 Step 'Git'
-if (Have 'git') { Ok "Git present ($((& git --version) -join ''))" }
-elseif ($hasWinget) {
-  Info 'Installing Git for Windows (per-user)'
-  Quiet { winget.exe install --id Git.Git -e --scope user --silent --accept-source-agreements --accept-package-agreements } | Out-Null
-  Refresh-Path
-  if (-not (Have 'git')) {
-    # No per-user package offered -> machine install (Windows may ask for permission once).
-    Quiet { winget.exe install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements } | Out-Null
-    Refresh-Path
-  }
-  if (Have 'git') { Ok 'Git installed' } else { Warn 'Git install did not finish - plugins may fail. Install from https://git-scm.com/downloads/win and re-run.' }
-} else { Warn 'Skipping Git (no winget).' }
+if (Have 'git') { Ok "Git present ($((Quiet { git --version }) -join ''))" }
+else {
+  # Portable MinGit from the official git-for-windows release: per-user, no admin
+  # prompt (winget's "user scope" Git still asks for elevation).
+  try {
+    $rel   = Invoke-RestMethod -UseBasicParsing 'https://api.github.com/repos/git-for-windows/git/releases/latest'
+    $want  = if ($arch -eq 'arm64') { 'arm64' } else { '64-bit' }
+    $asset = $rel.assets | Where-Object { $_.name -match "^MinGit-[\d.]+-$want\.zip$" } | Select-Object -First 1
+    if (-not $asset) { throw 'no MinGit build found' }
+    $gz = Join-Path ([IO.Path]::GetTempPath()) $asset.name
+    Info "Downloading $($asset.name)"
+    Invoke-WebRequest -UseBasicParsing $asset.browser_download_url -OutFile $gz
+    if ($rel.body -match ([regex]::Escape($asset.name) + '\s*\|\s*([0-9a-fA-F]{64})')) {
+      if ((Get-FileHash $gz -Algorithm SHA256).Hash -ne $Matches[1].ToUpper()) { throw 'checksum mismatch' }
+    }
+    $gitDir = Join-Path $StarterDir 'git'
+    if (Test-Path $gitDir) { Remove-Item -Recurse -Force $gitDir }
+    New-Item -ItemType Directory -Force -Path $gitDir | Out-Null
+    Expand-Archive -Path $gz -DestinationPath $gitDir
+    Remove-Item -Force $gz -ErrorAction SilentlyContinue
+    Add-UserPath (Join-Path $gitDir 'cmd')
+    if (Have 'git') { Ok 'Git installed (portable, per-user)' } else { throw 'git not runnable after install' }
+  } catch { Warn "Could not install Git ($($_.Exception.Message)) - plugins may fail. Install from https://git-scm.com/downloads/win and re-run." }
+}
 
 # --- Starter files (vault + settings) from the repo zip, no git needed ------
 Step 'Starter files'
@@ -147,7 +174,8 @@ else {
     Info "Downloading Obsidian $ver"
     Invoke-WebRequest -UseBasicParsing "https://github.com/obsidianmd/obsidian-releases/releases/download/v$ver/Obsidian-$ver.exe" -OutFile $exe
     $rc = Invoke-Timed $exe @('/S') 300     # per-user silent install, no admin
-    if ($rc -eq 0) { Ok 'Obsidian installed' } else { Warn "Obsidian installer exited $rc - install it from https://obsidian.md" }
+    for ($i = 0; $i -lt 30 -and -not (Test-Path $obsExe); $i++) { Start-Sleep -Seconds 1 }
+    if (Test-Path $obsExe) { Ok 'Obsidian installed' } else { Warn "Obsidian install didn't finish (exit $rc) - install it from https://obsidian.md" }
   } catch { Warn "Could not install Obsidian automatically ($($_.Exception.Message)) - get it from https://obsidian.md" }
 }
 
@@ -166,7 +194,7 @@ $plugins = 'superpowers@superpowers-marketplace', 'andrej-karpathy-skills@karpat
            'claude-code-setup@claude-plugins-official', 'feature-dev@claude-plugins-official',
            'pr-review-toolkit@claude-plugins-official', 'commit-commands@claude-plugins-official',
            'hookify@claude-plugins-official', 'skill-creator@claude-plugins-official'
-$claudeExe = (Get-Command claude).Source
+$claudeExe = Get-ClaudeExe
 if ($env:CCS_SKIP_PLUGINS -eq '1') { Info 'Skipping plugins (CCS_SKIP_PLUGINS=1)' }
 else {
   $pf = 0
@@ -216,8 +244,9 @@ else {
 
   $existing = (Quiet { & $claudeExe mcp get $McpName }) -join "`n"
   $registered = ($LASTEXITCODE -eq 0)
-  if ($registered -and $existing -like "*$McpPkg*") { Ok "MCP server '$McpName' already registered" }
-  elseif ($registered -and $existing -notlike '*Claude Code Starter*') { Ok "MCP server '$McpName' already registered (custom path) - leaving it" }
+  $hasVault = $existing.IndexOf($Vault, [StringComparison]::OrdinalIgnoreCase) -ge 0
+  if ($registered -and $hasVault -and $existing -like "*$McpPkg*") { Ok "MCP server '$McpName' already registered" }
+  elseif ($registered -and -not $hasVault -and $existing -notlike '*server-filesystem*') { Ok "MCP server '$McpName' already registered (custom setup) - leaving it" }
   else {
     if ($registered) { Info "Updating stale MCP server '$McpName'"; Quiet { & $claudeExe mcp remove --scope user $McpName } | Out-Null }
     Info "Registering MCP server '$McpName' (user scope)"
@@ -229,7 +258,7 @@ else {
 
 # --- Verify ----------------------------------------------------------------
 Step 'Verify'
-if (Have 'claude') { Ok 'claude on PATH' } else { Bad 'claude not on PATH - open a new PowerShell window' }
+if (Get-ClaudeExe) { Ok 'claude on PATH' } else { Bad 'claude not on PATH - open a new PowerShell window' }
 if (Test-Path $Vault) { Ok "vault present ($Vault)" } else { Bad 'vault missing - re-run the installer' }
 if (Test-NodeOk) { Ok "Node present ($(& node.exe --version))" } else { Bad 'Node missing - re-run the installer' }
 $null = Quiet { & $claudeExe mcp get $McpName }
