@@ -17,6 +17,17 @@ read over the phone):
 curl -fsSL https://tinyurl.com/2actfy4c | bash
 ```
 
+**Windows** (10 or 11, 64-bit) — paste into **PowerShell** (not Command Prompt).
+No admin needed; it installs Claude Code, Git, Node, Obsidian, the vault, the
+plugins, and the vault↔Claude MCP connection, all per-user:
+
+```powershell
+irm https://raw.githubusercontent.com/caseyhorowitz1536/claude-code-starter/main/install.ps1 | iex
+```
+
+When it finishes, close PowerShell, open a new window, run `claude`, then `/login`.
+In Obsidian choose **Open folder as vault** → `Documents\Claude Code Starter`.
+
 Prefer to inspect first? Clone and run:
 
 ```bash
